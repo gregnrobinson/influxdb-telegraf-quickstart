@@ -41,7 +41,7 @@ persistence:
 # I always use LoadBalancer for service types if they off a UI that needs to be accessed. I use metallb for load balancing on servers. 
 service:
   type: LoadBalancer
-  port: 80
+  port: 8086
   targetPort: 8086
   annotations: {}
   labels: {}
