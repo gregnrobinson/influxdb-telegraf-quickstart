@@ -119,7 +119,7 @@ The one thing that took me eons to figure out is you define the variables from `
 ## ref: https://docs.influxdata.com/telegraf/v1.1/administration/configuration/
 config:
   agent:
-    interval: "10s"
+    interval: "60s"
     round_interval: true
     metric_batch_size: 1000
     metric_buffer_limit: 10000
@@ -159,7 +159,15 @@ config:
         allowed_pending_messages: 10000
         percentile_limit: 1000
     - temp:
-    - hddtemp:
+    - diskio:
+    - disk:
+    - consul:
+        address: "http://consul.phronesis.cloud"
+    - internet_speed:
+        enable_file_download: false
+  health:
+    enabled: false
+  collect_memstats: false
 ```
 
 ### Install
