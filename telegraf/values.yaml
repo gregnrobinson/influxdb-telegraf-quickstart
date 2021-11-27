@@ -2,7 +2,7 @@
 ## This is a YAML-formatted file.
 ## ref: https://hub.docker.com/r/library/telegraf/tags/
 
-replicaCount: 1
+replicaCount: 3
 
 image:
   repo: "arm64v8/telegraf"
@@ -169,6 +169,13 @@ config:
         address: "http://consul.phronesis.cloud"
     - internet_speed:
         enable_file_download: false
+    - cpu:
+    - system:
+    - mem: 
+    - swap:
+    - net:
+    - netstat:
+    - processes:
   health:
     enabled: false
   collect_memstats: false
