@@ -170,10 +170,18 @@ config:
 ```bash
 helm repo add influxdata https://helm.influxdata.com/
 
-helm upgrade --install telegraf influxdata/telegraf -f values.yaml --force -n monitoring
+helm upgrade --install telegraf influxdata/telegraf -f telegraf/values.yaml --force -n monitoring --force
 ```
 
-### Telegraf Logs
+## Troubleshooting
+
+To open a shell session in the container running Telegraf run the following:
+
+```bash
+kubectl exec -i -t --namespace monitoring $(kubectl get pods --namespace monitoring -l app.kubernetes.io/name=telegraf -o jsonpath='{.items[0].metadata.name}') /bin/sh
+```
+
+To view the logs for a Telegraf pod, run the following:
 
 ```bash
 kubectl logs -f --namespace monitoring $(kubectl get pods --namespace monitoring -l app.kubernetes.io/name=telegraf -o jsonpath='{ .items[0].metadata.name }')
