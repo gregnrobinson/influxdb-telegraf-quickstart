@@ -1,6 +1,7 @@
 # InfluxDB2 & Telegraf Quickstart
 
-All code was sourced from [`https://github.com/influxdata/helm-charts.git`](https://github.com/influxdata/helm-charts.git). I had to get a local copy of the influxdb2 chart because they have not updated the ingress.yaml configuration for `networking.k8s.io/v1`. I included that in the `./influxdb/templates` directory and generated an Ingress resource that works fine with the deployment.
+All code was sourced from [`https://github.com/influxdata/helm-charts.git`](https://github.com/influxdata/helm-charts.git). I had to get a local copy of the influxdb2 chart because they have not updated the `ingress.yaml` configuration for `networking.k8s.io/v1`. the `influxdb` has the new config and `influxdb2`is still using `v1beta1`.
+
 
 ## InfluxDB
 
