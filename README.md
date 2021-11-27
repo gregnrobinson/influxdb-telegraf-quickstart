@@ -159,13 +159,11 @@ config:
         allowed_pending_messages: 10000
         percentile_limit: 1000
     - temp:
+    - hddtemp:
     - kubernetes:
         url: "https://192.168.0.81:6443"
         bearer_token_string: $KUBE_API_TOKEN
 ```
-
-
-
 
 ### Install
 
