@@ -72,6 +72,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: telegraf-tokens
+  namespace: monitoring
 type: Opaque
 stringData:
   # Required for Telegraf to send data to InfluxDB
