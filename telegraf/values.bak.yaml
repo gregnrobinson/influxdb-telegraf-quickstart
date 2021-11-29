@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repo: "arm64v8/telegraf"
-  tag: "1.20.4"
+  repo: "telegraf"
+  tag: "1.20-alpine"
   pullPolicy: IfNotPresent
 
 podAnnotations: {}
@@ -23,20 +23,13 @@ args: []
 # be added to the environment (must be manually created)
 # This can be useful for auth tokens, etc.
 
-envFromSecret: "telegraf-tokens"
+# envFromSecret: "telegraf-tokens"
+
+
 env:
-  # This pulls HOSTNAME from the node, not the pod.
   - name: HOSTNAME
-    valueFrom:
-      fieldRef:
-        fieldPath: spec.nodeName
-  # In test clusters where hostnames are resolved in /etc/hosts on each node,
-  # the HOSTNAME is not resolvable from inside containers
-  # So inject the host IP as well
-  - name: HOSTIP
-    valueFrom:
-      fieldRef:
-        fieldPath: status.hostIP
+    value: "telegraf-polling-service"
+
 # An older "volumeMounts" key was previously added which will likely
 # NOT WORK as you expect. Please use this newer configuration.
 
@@ -62,8 +55,7 @@ resources: {}
 
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-nodeSelector:
-  telegraph-selector: kube1
+nodeSelector: {}
 
 ## Affinity for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
@@ -90,45 +82,45 @@ rbac:
   # Create only for the release namespace or cluster wide (Role vs ClusterRole)
   clusterWide: false
   # Rules for the created rule
-  rules:
-  #When using the prometheus input to scrape all pods you need extra rules set to the ClusterRole to be
-  #able to scan the pods for scraping labels. The following rules have been taken from:
-  # https://github.com/helm/charts/blob/master/stable/prometheus/templates/server-clusterrole.yaml#L8-L46
- #    - apiGroups:
- #        - ""
- #      resources:
- #        - nodes
- #        - nodes/proxy
- #        - nodes/metrics
- #        - services
- #        - endpoints
- #        - pods
- #        - ingresses
- #        - configmaps
- #      verbs:
- #        - get
- #        - list
- #        - watch
- #    - apiGroups:
- #        - "extensions"
- #      resources:
- #        - ingresses/status
- #        - ingresses
- #      verbs:
- #        - get
- #        - list
- #        - watch
- #    - nonResourceURLs:
- #        - "/metrics"
- #      verbs:
- #        - get
+  rules: []
+# When using the prometheus input to scrape all pods you need extra rules set to the ClusterRole to be
+# able to scan the pods for scraping labels. The following rules have been taken from:
+# https://github.com/helm/charts/blob/master/stable/prometheus/templates/server-clusterrole.yaml#L8-L46
+#    - apiGroups:
+#        - ""
+#      resources:
+#        - nodes
+#        - nodes/proxy
+#        - nodes/metrics
+#        - services
+#        - endpoints
+#        - pods
+#        - ingresses
+#        - configmaps
+#      verbs:
+#        - get
+#        - list
+#        - watch
+#    - apiGroups:
+#        - "extensions"
+#      resources:
+#        - ingresses/status
+#        - ingresses
+#      verbs:
+#        - get
+#        - list
+#        - watch
+#    - nonResourceURLs:
+#        - "/metrics"
+#      verbs:
+#        - get
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
-  create: false
+  create: true
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: default
+  name:
   # Annotations for the ServiceAccount
   annotations: {}
 
@@ -137,7 +129,7 @@ serviceAccount:
 ## ref: https://docs.influxdata.com/telegraf/v1.1/administration/configuration/
 config:
   agent:
-    interval: "120s"
+    interval: "10s"
     round_interval: true
     metric_batch_size: 1000
     metric_buffer_limit: 10000
@@ -160,12 +152,10 @@ config:
             problem: 2
             critical: 3
   outputs:
-    - influxdb_v2:
+    - influxdb:
         urls:
-          - "https://influxdb.phronesis.cloud"
-        bucket: $INFLUX_BUCKET
-        token: $INFLUX_TOKEN
-        organization: phronesis-influxdb
+          - "http://influxdb.monitoring.svc:8086"
+        database: "telegraf"
   inputs:
     - statsd:
         service_address: ":8125"
@@ -176,35 +166,7 @@ config:
         metric_separator: "_"
         allowed_pending_messages: 10000
         percentile_limit: 1000
-    - temp:
-    - diskio:
-    - disk:
-    - consul:
-        address: "http://consul.phronesis.cloud"
-        metric_version: 2
-    - internet_speed:
-        enable_file_download: false
-    - cpu:
-    - system:
-    - mem: 
-    - swap:
-    - net:
-    - netstat:
-    - processes:
-    - kube_inventory:
-        url: https://192.168.0.81:6443
-        bearer_token_string: $KUBE_API_TOKEN
-        insecure_skip_verify: true
-        namespace: ""
-    - kubernetes:
-        url: https://$HOSTIP:10250
-        bearer_token_string: $KUBE_API_TOKEN
-        insecure_skip_verify: true
-    - prometheus:
-        metric_version: 2
-        kubernetes_services: ["http://10.104.65.245:10254"]
-        monitor_kubernetes_pods: false
-        bearer_token_string: $KUBE_API_TOKEN
+
 metrics:
   health:
     enabled: false

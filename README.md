@@ -198,3 +198,60 @@ kubectl logs -f --namespace monitoring $(kubectl get pods --namespace monitoring
 ```bash
 helm uninstall my-release
 ```
+
+### Shortcuts
+
+Was having issues with the Daemon set so for now I use these shortcuts to deploy. Not all that bad. I can test config on one and see how it compares to the currnet one.
+
+```bash
+# use ~/.bashrc for linux and ~/.zshrc for mac.
+alias helm-telegraf="helm upgrade --install telegraf ./telegraf -f telegraf/values.yaml --force -n monitoring --force"
+alias helm-influxdb="helm upgrade --install influxdb ./influxdb -f influxdb/values.yaml --force -n monitoring --force"
+alias tele1="helm upgrade --install telegraf-node-1 ./telegraf -f telegraf/values.yaml --force -n monitoring --force --set nodeSelector.telegraph-selector=kube1"
+alias tele2="helm upgrade --install telegraf-node-2 ./telegraf -f telegraf/values.yaml --force -n monitoring --force --set nodeSelector.telegraph-selector=kube2"
+alias tele3="helm upgrade --install telegraf-node-3 ./telegraf -f telegraf/values.yaml --force -n monitoring --force --set nodeSelector.telegraph-selector=kube3"
+alias tele4="helm upgrade --install telegraf-node-4 ./telegraf -f telegraf/values.yaml --force -n monitoring --force --set nodeSelector.telegraph-selector=kube4"
+source ~/.zshrc
+```
+
+## Influxdb authorization
+
+The token for the admin token is stored as an environment variable on the running container. Run the following command to authorize the CLI.
+
+```bash
+influx config create -n phronesis-influxdb -t ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN} -o phronesis-influxdb -u https://influxdb.phronesis.cloud -a
+```
+
+Now Create your user
+
+```bash
+influx user create -u USERNAME -p PaSswOrD -o org-name
+```
+
+You may need then to create an all access token for your org and give that the user not the admin token.
+
+## Get Kubernetes Connection Details
+
+```bash
+APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+SECRET_NAME=$(kubectl get serviceaccount default -o jsonpath='{.secrets[0].name}')
+TOKEN=$(kubectl get secret $SECRET_NAME -o jsonpath='{.data.token}' | base64 --decode)
+```
+
+### Untaint Master
+
+Did this to get telegraph running on all nodes... Influxdatas daemonSet helm chart didnt have influxfb2 support.
+
+```bash
+# Untaint
+# replace 'kube1' with your master node name.
+kubectl taint node kube1 node-role.kubernetes.io/master:NoSchedule-
+
+# Taint
+# replace 'kube1' with your master node name.
+kubectl taint node kube1 node-role.kubernetes.io/master:NoSchedule
+```
+
+## Reference
+
+<https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/>

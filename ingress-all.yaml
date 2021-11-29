@@ -1,0 +1,72 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  - hosts:
+      - grafana.phronesis.cloud
+    secretName: wildcard-phronesis-cert
+  rules:
+  - host: grafana.phronesis.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: grafana
+            port:
+              name: http
+        path: /
+        pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alertmanager-main
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+  - hosts:
+      - alertmanager.phronesis.cloud
+    secretName: wildcard-phronesis-cert
+  rules:
+  - host: alertmanager.phronesis.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: alertmanager-main
+            port:
+              name: web
+        path: /
+        pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-k8s
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  - hosts:
+      - prometheus.phronesis.cloud
+    secretName: wildcard-phronesis-cert
+  rules:
+  - host: prometheus.phronesis.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: prometheus-k8s
+            port:
+              name: web
+        path: /
+        pathType: Prefix
