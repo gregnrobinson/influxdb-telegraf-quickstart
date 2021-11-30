@@ -3,3 +3,4 @@ auth
 server.crt
 server.key
 .idea
+grafana-config.yaml
